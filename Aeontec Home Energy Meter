@@ -37,7 +37,7 @@
  */
 metadata {
 	definition (
-		name: 		"Aeontec Home Energy Meter",
+		name: 		"Aeon Labs Home Energy Meter",
 		namespace: 	"bridaus",
 		category: 	"Green Living",
 		author: 	"Brian Gudauskas"
@@ -248,6 +248,7 @@ metadata {
     preferences {
     	input "kWhCost", "number", title: "\$/kWh (0.17)", description: "0.17", defaultValue: 0.17
     	input "calibrationValue", "number", title: "Calibration for Power Reporting (Set to -1 to invert clamps)", defaultValue: 1
+    	input "wattsDiff", "number", title: "Threshold to Report Watts (0-60000)", defaultValue: 20
     }
 }
 
@@ -391,8 +392,8 @@ def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelCmdEncap 
 	def dispValue
 	def newValue
 	def formattedValue
-    def MAX_AMPS = 220
-    def MAX_WATTS = 24000
+	def MAX_AMPS = 220
+	def MAX_WATTS = 24000
 
    	if (cmd.commandClass == 50) {    
    		def encapsulatedCommand = cmd.encapsulatedCommand([0x30: 1, 0x31: 1]) // can specify command class versions here like in zwave.parse
@@ -400,7 +401,7 @@ def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelCmdEncap 
 			if (cmd.sourceEndPoint == 1) {
 				if (encapsulatedCommand.scale == 2 ) { 										//Watts
 //                	log.trace "L1 Watts Raw: ${encapsulatedCommand.scaledMeterValue}"
-					newValue = Math.round(encapsulatedCommand.scaledMeterValue) * calibrationValue
+			newValue = Math.round(encapsulatedCommand.scaledMeterValue) * calibrationValue
                     if (newValue > MAX_WATTS) { return }
 					formattedValue = newValue as String
 					dispValue = "${formattedValue} W"
@@ -631,34 +632,36 @@ def resetDisplay() {
 def reset() {
 	log.debug "reset()"
 
-    state.energyDispSinceReset = state.energyValue  //store reset energy
+	if (!state.energyValue) { state.energyValue = 0.0 }	// fix if null from new install
 
-	state.energyValue = -1
-	state.powerValue = -1
-	state.ampsValue = -1
-	state.voltsValue = -1
+	state.energyDispSinceReset = state.energyValue  //store reset energy
+
+	state.energyValue = 0.0
+	state.powerValue = 0.0
+	state.ampsValue = 0.0
+	state.voltsValue = 0.0
 	
     state.powerHigh = -99999
-    state.powerHighDisp = ""
+    state.powerHighDisp = "--"
     state.powerLow = 99999
-    state.powerLowDisp = ""
+    state.powerLowDisp = "--"
     state.ampsHigh = 0
-    state.ampsHighDisp = ""
+    state.ampsHighDisp = "--"
     state.ampsLow = 999
-    state.ampsLowDisp = ""
+    state.ampsLowDisp = "--"
     state.voltsHigh = 0
-    state.voltsHighDisp = ""
+    state.voltsHighDisp = "--"
     state.voltsLow = 999
     state.voltsLowDisp = ""
     
-    state.energyL1Disp = ""
-    state.energyL2Disp = ""
-    state.powerL1Disp = ""
-    state.powerL2Disp = ""
-    state.ampsL1Disp = ""
-    state.ampsL2Disp = ""
-    state.voltsL1Disp = ""
-    state.voltsL2Disp = ""
+    state.energyL1Disp = "--"
+    state.energyL2Disp = "--"
+    state.powerL1Disp = "--"
+    state.powerL2Disp = "--"
+    state.ampsL1Disp = "--"
+    state.ampsL2Disp = "--"
+    state.voltsL1Disp = "--"
+    state.voltsL2Disp = "--"
     
     if (!state.display) { state.display = 1 }	// Sometimes it appears that installed() isn't called
 
@@ -670,9 +673,9 @@ def reset() {
     resetDisplay()
 
 	sendEvent(name: "energyDisp", value: "", unit: "kWh")
-    sendEvent(name: "powerDisp", value: "", unit: "W")	
-    sendEvent(name: "ampsDisp", value: "", unit: "A")
-    sendEvent(name: "voltsDisp", value: "", unit: "V")
+	sendEvent(name: "powerDisp", value: "", unit: "W")	
+	sendEvent(name: "ampsDisp", value: "", unit: "A")
+	sendEvent(name: "voltsDisp", value: "", unit: "V")
 
 // No V1 available
 	def cmd = delayBetween( [
@@ -693,6 +696,7 @@ def configure() {
 	def cmd = delayBetween([
 		zwave.configurationV1.configurationSet(parameterNumber: 2, size: 1, scaledConfigurationValue: 1).format(),			// Enable (=1) pos/neg reporting
 		zwave.configurationV1.configurationSet(parameterNumber: 3, size: 1, scaledConfigurationValue: 0).format(),			// Disable (=0) selective reporting
+		zwave.configurationV1.configurationSet(parameterNumber: 4, size: 2, scaledConfigurationValue: wattsDiff).format(),		// Threshold for watts reporting
 
 		zwave.configurationV1.configurationSet(parameterNumber: 101, size: 4, scaledConfigurationValue: 6149).format(),   	// All L1/L2 kWh, total Volts & kWh
 		zwave.configurationV1.configurationSet(parameterNumber: 111, size: 4, scaledConfigurationValue: 60).format(), 		// Every 60 seconds
