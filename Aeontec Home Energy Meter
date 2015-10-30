@@ -1,5 +1,5 @@
 /**
- *  Aeontec Home Energy Meter [[This is a DEVICE TYPE]]
+ *  Aeon Labs Home Energy Meter [[This is a DEVICE TYPE]]
  *
  *  Copyright 2015 Brian Gudauskas
  *
@@ -19,6 +19,9 @@
  *  Contributors: Barry Burke, SmartThings
  *
  *  History:
+ * 	10/30/15: Updates  
+ *		Fixed issue on first install
+ *		Added watts threshold
  * 	10/26/15: Updates  
  *		Fixed watts high/low
  *		Fixed reset energy
