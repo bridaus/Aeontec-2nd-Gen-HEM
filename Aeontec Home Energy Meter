@@ -48,9 +48,9 @@ metadata {
 
 	{
     	capability "Energy Meter"
-	capability "Power Meter"
-	capability "Configuration"
-	capability "Sensor"
+		capability "Power Meter"
+		capability "Configuration"
+		capability "Sensor"
         capability "Refresh"
         capability "Polling"
         capability "Battery"
@@ -77,17 +77,15 @@ metadata {
         attribute "ampsOne", "number"
         attribute "ampsTwo", "number"        
         
-	command "reset"
+		command "reset"
         command "configure"
         command "refresh"
         command "poll"
         command "toggleDisplay"
         
 // v1		fingerprint deviceId: "0x2101", inClusters: " 0x70,0x31,0x72,0x86,0x32,0x80,0x85,0x60"
-
 		fingerprint deviceId: "0x3101", inClusters: "0x70,0x32,0x60,0x85,0x56,0x72,0x86"
 	}
-
 
 	// tile definitions
 	tiles {
@@ -96,7 +94,7 @@ metadata {
 		valueTile("powerDisp", "device.powerDisp") {
 			state (
 				"default", 
-				label:'${currentValue} W', unit:"W",
+				label:'${currentValue} W',
                 icon: "st.Lighting.light14",
             	foregroundColor: "#000000",
                 backgroundColors:[
@@ -131,28 +129,25 @@ metadata {
         }
 
 	// Power row
-		valueTile("energyDisp", "device.energyDisp") {
+		valueTile("energyDisp", "device.energyDisp", decoration: "flat") {
 			state(
 				"default", 
 				label: '${currentValue} kWh', 
-				foregroundColor: "#000000", 
-				backgroundColor: "#ffffff"
+				foregroundColor: "#000000"
 )
 		}
         valueTile("energyOne", "device.energyOne", decoration: "flat") {
         	state(
         		"default", 
-        		label: '${currentValue}', 
-        		foregroundColor: "#000000", 
-        		backgroundColor: "#ffffff"
+        		label: '${currentValue}',
+        		foregroundColor: "#000000"
 )
         }        
         valueTile("energyTwo", "device.energyTwo", decoration: "flat") {
         	state(
         		"default", 
         		label: '${currentValue}', 
-        		foregroundColor: "#000000", 
-        		backgroundColor: "#ffffff"
+        		foregroundColor: "#000000"
 )
         }
         
@@ -698,17 +693,17 @@ def configure() {
     
 	def cmd = delayBetween([
 		zwave.configurationV1.configurationSet(parameterNumber: 2, size: 1, scaledConfigurationValue: 1).format(),			// Enable (=1) pos/neg reporting
-		zwave.configurationV1.configurationSet(parameterNumber: 3, size: 1, scaledConfigurationValue: 0).format(),			// Disable (=0) selective reporting
-		zwave.configurationV1.configurationSet(parameterNumber: 4, size: 2, scaledConfigurationValue: wattsDiff).format(),		// Threshold for watts reporting
+		zwave.configurationV1.configurationSet(parameterNumber: 3, size: 1, scaledConfigurationValue: 1).format(),			// Disable (=0) selective reporting
+		zwave.configurationV1.configurationSet(parameterNumber: 4, size: 2, scaledConfigurationValue: wattsDiff ?: 0).format(),		// Threshold for watts reporting
 
-		zwave.configurationV1.configurationSet(parameterNumber: 101, size: 4, scaledConfigurationValue: 6149).format(),   	// All L1/L2 kWh, total Volts & kWh
-		zwave.configurationV1.configurationSet(parameterNumber: 111, size: 4, scaledConfigurationValue: 60).format(), 		// Every 60 seconds
+		zwave.configurationV1.configurationSet(parameterNumber: 101, size: 4, scaledConfigurationValue: 6149).format(),   		// All L1/L2 kWh, total Volts & kWh
+		zwave.configurationV1.configurationSet(parameterNumber: 111, size: 4, scaledConfigurationValue: 60).format(), 			// Every 60 seconds
 
-		zwave.configurationV1.configurationSet(parameterNumber: 102, size: 4, scaledConfigurationValue: 1572872).format(),	// Amps L1, L2, Total
-		zwave.configurationV1.configurationSet(parameterNumber: 112, size: 4, scaledConfigurationValue: 30).format(), 		// every 30 seconds
+		zwave.configurationV1.configurationSet(parameterNumber: 102, size: 4, scaledConfigurationValue: 1572872).format(),		// Amps L1, L2, Total
+		zwave.configurationV1.configurationSet(parameterNumber: 112, size: 4, scaledConfigurationValue: 30).format(), 			// every 30 seconds
 
-		zwave.configurationV1.configurationSet(parameterNumber: 103, size: 4, scaledConfigurationValue: 770).format(),		// Power (Watts) L1, L2, Total
-		zwave.configurationV1.configurationSet(parameterNumber: 113, size: 4, scaledConfigurationValue: 6).format() 		// every 6 seconds
+		zwave.configurationV1.configurationSet(parameterNumber: 103, size: 4, scaledConfigurationValue: 770).format(),			// Power (Watts) L1, L2, Total
+		zwave.configurationV1.configurationSet(parameterNumber: 113, size: 4, scaledConfigurationValue: 6).format() 			// every 6 seconds
 	], 2000)
 	log.debug cmd
 
