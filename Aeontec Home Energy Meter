@@ -19,6 +19,7 @@
  *  Contributors: Barry Burke, SmartThings
  *
  *  History:
+ *	11/30/15: Removed required on install for Android bug
  *	11/25/15: Installation Updates
  * 	10/30/15: Updates  
  *		Fixed issue on first install
@@ -245,9 +246,9 @@ metadata {
 		])
 	}
     preferences {
-    	input "kWhCost", "number", title: "\$/kWh (0.17)", description: "0.17", defaultValue: 0.17, required: true, displayDuringSetup: true
-    	input "calibrationValue", "number", title: "Calibration for Power Reporting (Set to -1 to invert clamps)", defaultValue: 1, required: true, displayDuringSetup: true
-    	input "wattsDiff", "number", title: "Threshold to Report Watts (0-60000)", defaultValue: 20, required: true, displayDuringSetup: true
+    	input "kWhCost", "number", title: "\$/kWh (0.17)", description: "0.17", defaultValue: 0.17, displayDuringSetup: true
+    	input "calibrationValue", "number", title: "Calibration for Power Reporting (Set to -1 to invert clamps)", defaultValue: 1, displayDuringSetup: true
+    	input "wattsDiff", "number", title: "Threshold to Report Watts (0-60000)", defaultValue: 20, displayDuringSetup: true
     }
 }
 
